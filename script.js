@@ -17,7 +17,7 @@ function Gameboard() {
         if (board[row][column].getValue() !== 0) return
       
         board[row][column].addToken(player);
-        console.log('success')
+
     };
 
     const printBoard = () => {
@@ -44,10 +44,12 @@ function Cell() {
 }
 
 function GameController(
-    playerOneName = prompt("Player One name?"),
-    playerTwoName = prompt("Player Two name?")
+    playerOneName,
+    playerTwoName
+ //   playerOneName = prompt("Player One name?"),
+   // playerTwoName = prompt("Player Two name?")
 ) {
-    const board = Gameboard();
+    const gameboard = Gameboard();
 
     const players = [
         {
@@ -68,7 +70,7 @@ function GameController(
     const getActivePlayer = () => activePlayer;
 
     const printNewRound = () => {
-        board.printBoard();
+        gameboard.printBoard();
         console.log(`${getActivePlayer().name}'s turn`);
     };
 
@@ -76,20 +78,58 @@ function GameController(
         let row = Math.floor((userInput-1) / 3);
         let column = ((userInput - 1) % 3);
         console.log(`${getActivePlayer().name} has played.`);
-        board.dropToken(row, column, getActivePlayer().token);
+    
+        gameboard.dropToken(row, column, getActivePlayer().token);
         
-        console.log(getActivePlayer().token)
-        console.log(board[0])
-    //   const checkWin = (row) => {
-    //     let checkNum = getActivePlayer().token;
-    //     console.log(checkNum);
-    //     if (board[row].includes(checkNum)) {
-    //         console.log('no win')
-    //     }}
-    //     checkWin();
+        
+        const Checkwin = (row, column) => {
+            console.log("row:", row, "column:", column);
+            const rowCheck = gameboard.getBoard()[row].map(cell => cell.getValue());
+            const columnCheck = gameboard.getBoard().map(row => row[column].getValue());
+            const diagonalCheck = [gameboard.getBoard()[0][0].getValue(), gameboard.getBoard()[1][1].getValue(), gameboard.getBoard()[2][2].getValue()];
+            const antiDiagonalCheck = [gameboard.getBoard()[2][0].getValue(), gameboard.getBoard()[1][1].getValue(), gameboard.getBoard()[0][2].getValue()];
+            
+            const isMarker = (currentMarker) => currentMarker === getActivePlayer().token;
+            
+            if (rowCheck.every(isMarker)) {
+            console.log(`${getActivePlayer().name} has won!`);
+            return true;
+            };
+
+            if (columnCheck.every(isMarker)) {
+            console.log(`${getActivePlayer().name} has won!`);
+            return true;
+            };
+
+            if (diagonalCheck.every(isMarker)) {
+            console.log(`${getActivePlayer().name} has won!`);
+            return true;
+            };
+
+            if (antiDiagonalCheck.every(isMarker)) {
+            console.log(`${getActivePlayer().name} has won!`);
+            return true;
+            };
+        };
+
+       const Checkdraw = () => {
+            const boardArray = gameboard.getBoard().map(row => row.map(cell => cell.getValue()));
+            const flatBoard = boardArray.flat();
+
+            const isItMarked = (currentMarker) => currentMarker !== 0;
+            if (flatBoard.every(isItMarked)) {
+                console.log('draw')
+            }
+
+            
+       }
+
+                
+
         
         //check for winner & handle that logic including win message.
-
+    Checkwin(row, column);
+    Checkdraw(row);
     switchPlayerTurn();
     printNewRound();
 };
