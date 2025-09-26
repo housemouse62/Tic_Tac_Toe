@@ -62,9 +62,11 @@ function Gameboard() {
 
     const dropToken = (row, column, player) => {
         const cellChosen = board[row][column];
-        if (board[row][column].getValue() !== 0) return
+        if (board[row][column].getValue() !== 0) {
+            return false};
       
         board[row][column].addToken(player);
+        return true;
 
     };
 
@@ -131,18 +133,27 @@ function GameController(scoreboard) {
     const playRound = (userInput) => {
         let row = Math.floor((userInput-1) / 3);
         let column = ((userInput - 1) % 3);
+        
+        const success = gameboard.dropToken(row, column, getCurrentPlayer().token);
+        console.log(success)
+        if (!success) {
+            console.log('That cell is already full, try another.');
+            printNextRound;
+            return;
+        };
+
         console.log(`${getCurrentPlayer().name} has played.`);
         
-        gameboard.dropToken(row, column, getCurrentPlayer().token);  
-  
         if (Checkwin(row, column)) { 
             if (PlayAgainQuestion()) {
                 SetNextRound()} 
             } else if (Checkdraw()) {
+                console.log(scoreboard.getScores())
                 alert("It's a DRAW!");
                 if (PlayAgainQuestion()) { SetNextRound() }
             } else { switchPlayerTurn();
-                     printNextRound(); }
+                     printNextRound();
+                    }
     };     
 
     const Checkwin = (row, column) => {
@@ -192,7 +203,7 @@ function GameController(scoreboard) {
 
         return false;
     };
-
+    
     const PassScoreInfo = () => {
         scoreboard.increment(getCurrentPlayer().name);
         console.log(scoreboard.getScores());
