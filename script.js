@@ -53,10 +53,8 @@ function Cell() {
 }
 
 function GameController(
-    playerOneName,
-    playerTwoName
- //   playerOneName = prompt("Player One name?"),
-   // playerTwoName = prompt("Player Two name?")
+    playerOneName = prompt("Player One name?"),
+    playerTwoName = prompt("Player Two name?")
 ) {
     const gameboard = Gameboard();
 
@@ -72,6 +70,18 @@ function GameController(
     ];
 
     let currentPlayer = players[0];
+    let playerOneScore = 0;
+    let playerTwoScore = 0;
+
+    const Scoreboard = () => {
+        if (getCurrentPlayer().name === players[0].name) {
+            playerOneScore =+ 1
+        } else {
+            playerTwoScore =+ 1
+        }
+        console.log(`${players[0].name}: ${playerOneScore} | ${players[1].name}: ${playerTwoScore}`)
+     //  };
+     };
 
     const switchPlayerTurn = () => {
         currentPlayer = currentPlayer === players[0] ? players[1] : players[0];
@@ -89,10 +99,13 @@ function GameController(
         console.log(`${getCurrentPlayer().name} has played.`);
     
         gameboard.dropToken(row, column, getCurrentPlayer().token);  
-        
+     //           console.log(`${players[0].name}: ${players[1].score} | ${players[1].name}: ${players[1].score}`)
+
+        console.log(getCurrentPlayer().name)
         
         if (Checkwin(row, column)) { 
-            if (PlayAgainQuestion()) { 
+            if (PlayAgainQuestion()) {
+                Scoreboard(); 
                 ResetGame()} 
             } else if (Checkdraw()) {
                 alert('DRAW!');
@@ -110,6 +123,10 @@ function GameController(
         
         const isMarker = (currentMarker) => currentMarker === getCurrentPlayer().token;
         
+        console.log(getCurrentPlayer().name);
+        console.log(currentPlayer.name);
+        console.log(players[0].name);
+
         if (rowCheck.every(isMarker)) {
             console.log(`${getCurrentPlayer().name} has won!`);
             return true;
@@ -147,6 +164,7 @@ function GameController(
 
         return false;
     };
+
     const PlayAgainQuestion = () => {
         while (true) {
         const userAnswer = prompt('Would you like to play again? Y / N?');
