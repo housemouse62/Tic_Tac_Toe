@@ -61,7 +61,6 @@ function Gameboard() {
     const getBoard = () => board;
 
     const dropToken = (row, column, player) => {
-     //   const cellChosen = board[row][column];
         if (board[row][column].getValue() !== 0) {
             return false};
       
@@ -230,10 +229,8 @@ function GameController(scoreboard) {
         gameboard.resetBoard();
         currentPlayer = players[1];
         scoreboard.reset();
-        console.log(scoreboard.getScores())
         switchPlayerTurn();
         printNextRound();
-        console.log('I reset')
     };
 
     const SetNextRound = () => {
@@ -266,21 +263,18 @@ function DOMController() {
     //Setup
     const gameGridArea = document.createElement('div');
          gameGridArea.classList = 'gameGridArea';
-    
-
     function createBoard() {
     
     for (let i = 1; i < 10; i++) {
-        createDivs(i);
+        createSquares(i);
     };
     };
 
     const squares = [];
-    const createDivs = (id) => {
+    const createSquares = (id) => {
         const newSquare = document.createElement('div');
         newSquare.classList.add("square");
         newSquare.dataset.id = id;
-        
 
         newSquare.addEventListener("click", () => {
             game.playRound(id);
@@ -294,10 +288,20 @@ function DOMController() {
 
     container.appendChild(gameGridArea);
     
+    // Welcome Dialogue Pop-up
+    const renderWelcomeBox = () => {
+        const user1 = document.getElementById("player1");
+        const user2 = document.getElementById("player2");
+        const startButton = document.getElementById("startButton");
+        startButton.addEventListener('click', () => {returnText()})
+        function returnText() {
+        let input = user1.value;
+        console.log(input)}
+        
+    };
 
     // Gameplay
     const renderBoard = () => {
- //   newSquare.innerHTML = "";
         const board = game.getGameboard().getBoard();
             board.forEach((row, i) => {
                 row.forEach((cell, j) => {
@@ -307,31 +311,20 @@ function DOMController() {
             });
     };
 
-    
-
     // Scoring
-    
-
-    
     const renderScores = () => {
-        
-        
-        
         const [p1, p2] = scoreboard.getPlayerNames()
         const p1Score = scoreboard.getScores()[p1];
         const p2Score = scoreboard.getScores()[p2];
     
         playerOneScore.innerHTML = `${p1}: ${p1Score}`;
         playerTwoScore.innerHTML = `${p2}: ${p2Score}`;
-
-        
     };
     
     container.appendChild(scorearea);
         scorearea.appendChild(playerOneScore);
         scorearea.appendChild(playerTwoScore);
     
-
     // Message Area
     const messageArea = document.createElement('h3');
         messageArea.classList = 'messageArea';
@@ -350,7 +343,8 @@ function DOMController() {
 
        resetGameButton.addEventListener('click', () => {
          game.ResetGame();
-         renderScores()
+         renderScores();
+         renderBoard();
 
        });
        
@@ -359,8 +353,7 @@ function DOMController() {
     buttonArea.appendChild(nextRoundButton);
     buttonArea.appendChild(resetGameButton);
     
-    
-
+    renderWelcomeBox();
     createBoard();
     renderBoard();
     renderScores();
@@ -368,4 +361,3 @@ function DOMController() {
 };
 const { game, scoreboard } = SetupGame();
 DOMController(game.getGameboard());
-//console.log(game.getGameboard().printBoard())
