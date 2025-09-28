@@ -61,7 +61,7 @@ function Gameboard() {
     const getBoard = () => board;
 
     const dropToken = (row, column, player) => {
-        const cellChosen = board[row][column];
+     //   const cellChosen = board[row][column];
         if (board[row][column].getValue() !== 0) {
             return false};
       
@@ -105,6 +105,8 @@ function Cell() {
 function GameController(scoreboard) {
     const gameboard = Gameboard();
 
+    const getGameboard = () => gameboard; //getter for DOM
+
     const [playerOneName, playerTwoName] = scoreboard.getPlayerNames();
 
     const players = [
@@ -135,10 +137,10 @@ function GameController(scoreboard) {
         let column = ((userInput - 1) % 3);
         
         const success = gameboard.dropToken(row, column, getCurrentPlayer().token);
-        console.log(success)
+
         if (!success) {
             console.log('That cell is already full, try another.');
-            printNextRound;
+            printNextRound();
             return;
         };
 
@@ -223,16 +225,16 @@ function GameController(scoreboard) {
         if (userAnswer.toUpperCase() === 'N') return false;
     }};
 
-    //Use to ResetGameCompletely
-    // const ResetGame = () => {
-    //     gameboard.resetBoard();
-    //     currentPlayer = players[1];
-    //     scoreboard.reset();
-    //     console.log(scoreboard.getScores())
-    //     switchPlayerTurn();
-    //     printNextRound();
-    //     console.log('I reset')
-    // };
+    // Use to ResetGameCompletely
+    const ResetGame = () => {
+        gameboard.resetBoard();
+        currentPlayer = players[1];
+        scoreboard.reset();
+        console.log(scoreboard.getScores())
+        switchPlayerTurn();
+        printNextRound();
+        console.log('I reset')
+    };
 
     const SetNextRound = () => {
         gameboard.resetBoard();
@@ -243,8 +245,127 @@ function GameController(scoreboard) {
 
     return {
         playRound,
-        getCurrentPlayer
+        getCurrentPlayer,
+        getGameboard, //give the gameboard to the DOM
+        ResetGame
     };
 };
 
+function DOMController() {
+    const container = document.querySelector('#container')
+    const scorearea = document.createElement('div');
+        scorearea.classList = 'scoreArea';
+        scorearea.textContent = 'SCORE:'
+        scorearea.innerHTML = "";
+    const playerOneScore = document.createElement('div');
+        playerOneScore.classList = 'playerScoreBoard';
+    const playerTwoScore = document.createElement('div');
+        playerTwoScore.classList = 'playerScoreBoard';
+    
+
+    //Setup
+    const gameGridArea = document.createElement('div');
+         gameGridArea.classList = 'gameGridArea';
+    
+
+    function createBoard() {
+    
+    for (let i = 1; i < 10; i++) {
+        createDivs(i);
+    };
+    };
+
+    const squares = [];
+    const createDivs = (id) => {
+        const newSquare = document.createElement('div');
+        newSquare.classList.add("square");
+        newSquare.dataset.id = id;
+        
+
+        newSquare.addEventListener("click", () => {
+            game.playRound(id);
+            renderBoard();
+            renderScores();
+            
+        });
+        gameGridArea.append(newSquare);
+        squares.push(newSquare);
+    };
+
+    container.appendChild(gameGridArea);
+    
+
+    // Gameplay
+    const renderBoard = () => {
+ //   newSquare.innerHTML = "";
+        const board = game.getGameboard().getBoard();
+            board.forEach((row, i) => {
+                row.forEach((cell, j) => {
+                    const index = i * 3 + j;
+                    squares[index].textContent = cell.getValue() === 0 ? "" : cell.getValue();
+                })
+            });
+    };
+
+    
+
+    // Scoring
+    
+
+    
+    const renderScores = () => {
+        
+        
+        
+        const [p1, p2] = scoreboard.getPlayerNames()
+        const p1Score = scoreboard.getScores()[p1];
+        const p2Score = scoreboard.getScores()[p2];
+    
+        playerOneScore.innerHTML = `${p1}: ${p1Score}`;
+        playerTwoScore.innerHTML = `${p2}: ${p2Score}`;
+
+        
+    };
+    
+    container.appendChild(scorearea);
+        scorearea.appendChild(playerOneScore);
+        scorearea.appendChild(playerTwoScore);
+    
+
+    // Message Area
+    const messageArea = document.createElement('h3');
+        messageArea.classList = 'messageArea';
+    container.appendChild(messageArea);
+    
+
+    // Buttons
+    const buttonArea = document.createElement('div');
+        buttonArea.classList = 'buttonArea';
+    const nextRoundButton = document.createElement('button');
+        nextRoundButton.classList = 'nextRound';
+    const resetGameButton = document.createElement('button');
+        resetGameButton.classList = 'resetGame';
+    
+       nextRoundButton.innerHTML = "New Round";
+
+       resetGameButton.addEventListener('click', () => {
+         game.ResetGame();
+         renderScores()
+
+       });
+       
+       resetGameButton.innerHTML = "Reset Game";
+    container.appendChild(buttonArea);
+    buttonArea.appendChild(nextRoundButton);
+    buttonArea.appendChild(resetGameButton);
+    
+    
+
+    createBoard();
+    renderBoard();
+    renderScores();
+    
+};
 const { game, scoreboard } = SetupGame();
+DOMController(game.getGameboard());
+//console.log(game.getGameboard().printBoard())

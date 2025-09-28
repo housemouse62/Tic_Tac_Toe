@@ -7,5 +7,36 @@
 }
 
 h1 {
-    font-size: 10px;
+    text-align: center;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameGridArea {
+    display: flex;
+    flex-wrap: wrap;
+    width: 450px;
+}
+
+.square {
+    width: 150px;
+    height: 150px;
+    border: 1px solid black;
+    background-color: lightblue;
+}
+
+.scoreArea {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.buttonArea {
+    display: flex;
+    gap: 20px;
 }
