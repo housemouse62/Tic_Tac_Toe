@@ -18,27 +18,6 @@ const Scoreboard = (player1Name, player2Name) =>  {
 }
 
 function SetupGame(playerOneName, playerTwoName) {
-    // const playerOneName = playerOnePrompt();
-    // const playerTwoName = playerTwoPrompt();
-
-    // function playerOnePrompt() {
-    //     let playerOneName = prompt("Player One name?");
-        
-    //     if (playerOneName === null || playerOneName.trim() === '') {
-    //     playerOneName = 'Player One'
-    //     };
-    //     return playerOneName;
-    // };
-
-    // function playerTwoPrompt() {
-    //     let playerTwoName = prompt("Player Two name?");
-        
-    //     if (playerTwoName === null || playerTwoName.trim() === '') {
-    //     playerTwoName = 'Player Two'
-    //     };
-    //     return playerTwoName;
-    // };
-
     const scoreboard = Scoreboard(playerOneName, playerTwoName);
     const game = GameController(scoreboard);
 
@@ -103,6 +82,11 @@ function Cell() {
 
 function GameController(scoreboard) {
     const gameboard = Gameboard();
+    let roundOverCallback = null;
+
+    const setRoundOverCallback = (cb) => {
+        roundOverCallback = cb;
+    };
 
     const getGameboard = () => gameboard; //getter for DOM
 
@@ -146,12 +130,14 @@ function GameController(scoreboard) {
         console.log(`${getCurrentPlayer().name} has played.`);
         
         if (Checkwin(row, column)) { 
-            if (PlayAgainQuestion()) {
-                SetNextRound()} 
+            announceWinner({ name: currentPlayer.name, token: currentPlayer.token });
+     //       if (PlayAgainQuestion()) {
+     //           SetNextRound()} 
             } else if (Checkdraw()) {
-                console.log(scoreboard.getScores())
-                alert("It's a DRAW!");
-                if (PlayAgainQuestion()) { SetNextRound() }
+            announceWinner(null);
+      //          console.log(scoreboard.getScores())
+      //          alert("It's a DRAW!");
+       //         if (PlayAgainQuestion()) { SetNextRound() }
             } else { switchPlayerTurn();
                      printNextRound();
                     }
@@ -167,25 +153,21 @@ function GameController(scoreboard) {
 
         if (rowCheck.every(isMarker)) {
             PassScoreInfo();
-            AnnounceWinner();
             return true;
         };
 
         if (columnCheck.every(isMarker)) {
             PassScoreInfo();
-            AnnounceWinner();
             return true;
         };
 
         if (diagonalCheck.every(isMarker)) {
             PassScoreInfo();
-            AnnounceWinner();
             return true;
         };
 
         if (antiDiagonalCheck.every(isMarker)) {
             PassScoreInfo();
-            AnnounceWinner();
             return true;
         };
 
@@ -210,8 +192,11 @@ function GameController(scoreboard) {
         console.log(scoreboard.getScores());
     };
 
-    const AnnounceWinner = () => {
-        console.log(`${getCurrentPlayer().name} has won!`);
+
+    const announceWinner = winner => {
+        if(roundOverCallback) {
+            roundOverCallback(winner)
+        }
     };
 
     const PlayAgainQuestion = () => {
@@ -244,15 +229,20 @@ function GameController(scoreboard) {
         playRound,
         getCurrentPlayer,
         getGameboard, //give the gameboard to the DOM
-        ResetGame
+        ResetGame,
+        SetNextRound,
+        setRoundOverCallback
     };
 };
 
 const startGame = () => {
         const startButton = document.getElementById("startButton");
+        document.getElementById('welcomeDialogue').style.display = 'block';
         startButton.addEventListener('click', () => {
             const user1 = document.getElementById("player1").value || 'Player One';
             const user2 = document.getElementById("player2").value || 'Player Two';
+        document.getElementById('welcomeDialogue').style.display = 'none';
+
 
         const { game, scoreboard } = SetupGame(user1, user2);
         DOMController( game, scoreboard);
@@ -261,6 +251,7 @@ const startGame = () => {
 
 function DOMController(game, scoreboard) {
     const container = document.querySelector('#container')
+    const [p1, p2] = scoreboard.getPlayerNames()
 
     //score area
     const scorearea = document.createElement('div');
@@ -269,9 +260,7 @@ function DOMController(game, scoreboard) {
         playerOneScore.classList = 'playerScoreBoard';
     const playerTwoScore = document.createElement('div');
         playerTwoScore.classList = 'playerScoreBoard';
-    container.appendChild(scorearea);
-    scorearea.appendChild(playerOneScore);
-    scorearea.appendChild(playerTwoScore);
+    
     
 
     //game grid
@@ -304,15 +293,15 @@ function DOMController(game, scoreboard) {
         messageArea.classList = 'messageArea';
     container.appendChild(messageArea);
 
+    container.appendChild(scorearea);
+    scorearea.appendChild(playerOneScore);
+    scorearea.appendChild(playerTwoScore);
+
     // Buttons
     const buttonArea = document.createElement('div');
         buttonArea.classList = 'buttonArea';
-    const nextRoundButton = document.createElement('button');
-        nextRoundButton.classList = 'nextRound';
     const resetGameButton = document.createElement('button');
         resetGameButton.classList = 'resetGame';
-    
-       nextRoundButton.innerHTML = "New Round";
 
        resetGameButton.addEventListener('click', () => {
          game.ResetGame();
@@ -328,13 +317,54 @@ function DOMController(game, scoreboard) {
                 row.forEach((cell, j) => {
                     const index = i * 3 + j;
                     squares[index].textContent = cell.getValue() === 0 ? "" : cell.getValue();
-                })
+                });
             });
+    };
+    
+    const roundOver = (winnerName) => {
+        const roundOverDialogue = document.getElementById('roundOverDialogue');
+        const winnerClass = document.querySelector('.winner');
+        const scoreIsNowClass = document.querySelector('.scoreIsNow');
+       
+        //Show popup
+        roundOverDialogue.style.display = 'block';
+
+        //Announce winner
+        if (winnerName === null) {
+            winnerClass.textContent = "It's a draw!"
+        } else {
+        winnerClass.textContent = `${winnerName.name} wins!`;
+        };
+
+        //Show Updated Score
+        const p1Score = scoreboard.getScores()[p1];
+        const p2Score = scoreboard.getScores()[p2];
+        scoreIsNowClass.textContent = `${p1}: ${p1Score} | ${p2}: ${p2Score}`;
+
+        //Buttons
+        const startAllOver = document.getElementById('startAllOver');
+        const nextRoundButton = document.getElementById("nextRoundButton");
+            nextRoundButton.innerHTML = "New Round";
+
+        nextRoundButton.addEventListener('click', () => {
+            game.SetNextRound()
+            renderScores();
+            renderBoard();
+            roundOverDialogue.style.display = 'none';
+        });
+
+        startAllOver.addEventListener('click', () => {
+         game.ResetGame();
+         renderScores();
+         renderBoard();
+         roundOverDialogue.style.display = 'none';
+       });
+
+        
     };
 
         // Scoring
     const renderScores = () => {
-        const [p1, p2] = scoreboard.getPlayerNames()
         const p1Score = scoreboard.getScores()[p1];
         const p2Score = scoreboard.getScores()[p2];
     
@@ -348,6 +378,8 @@ function DOMController(game, scoreboard) {
     buttonArea.appendChild(nextRoundButton);
     buttonArea.appendChild(resetGameButton);
     
+    game.setRoundOverCallback(roundOver);
+
     renderBoard();
     renderScores();
     

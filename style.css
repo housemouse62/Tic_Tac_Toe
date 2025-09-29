@@ -18,6 +18,14 @@
 }
 
 #welcomeDialogue {
+    display: none;
+}
+
+#roundOverDialogue {
+    display: none;
+}
+
+.dialogue {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -27,9 +35,6 @@
     border: 2px solid black;
     z-index: 1000;
 }
-
-
-
 
 h1 {
     text-align: center;
