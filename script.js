@@ -17,27 +17,27 @@ const Scoreboard = (player1Name, player2Name) =>  {
     return { increment, reset, getScores, getPlayerNames };
 }
 
-function SetupGame() {
-    const playerOneName = playerOnePrompt();
-    const playerTwoName = playerTwoPrompt();
+function SetupGame(playerOneName, playerTwoName) {
+    // const playerOneName = playerOnePrompt();
+    // const playerTwoName = playerTwoPrompt();
 
-    function playerOnePrompt() {
-        let playerOneName = prompt("Player One name?");
+    // function playerOnePrompt() {
+    //     let playerOneName = prompt("Player One name?");
         
-        if (playerOneName === null || playerOneName.trim() === '') {
-        playerOneName = 'Player One'
-        };
-        return playerOneName;
-    };
+    //     if (playerOneName === null || playerOneName.trim() === '') {
+    //     playerOneName = 'Player One'
+    //     };
+    //     return playerOneName;
+    // };
 
-    function playerTwoPrompt() {
-        let playerTwoName = prompt("Player Two name?");
+    // function playerTwoPrompt() {
+    //     let playerTwoName = prompt("Player Two name?");
         
-        if (playerTwoName === null || playerTwoName.trim() === '') {
-        playerTwoName = 'Player Two'
-        };
-        return playerTwoName;
-    };
+    //     if (playerTwoName === null || playerTwoName.trim() === '') {
+    //     playerTwoName = 'Player Two'
+    //     };
+    //     return playerTwoName;
+    // };
 
     const scoreboard = Scoreboard(playerOneName, playerTwoName);
     const game = GameController(scoreboard);
@@ -248,29 +248,37 @@ function GameController(scoreboard) {
     };
 };
 
-function DOMController() {
+const startGame = () => {
+        const startButton = document.getElementById("startButton");
+        startButton.addEventListener('click', () => {
+            const user1 = document.getElementById("player1").value || 'Player One';
+            const user2 = document.getElementById("player2").value || 'Player Two';
+
+        const { game, scoreboard } = SetupGame(user1, user2);
+        DOMController( game, scoreboard);
+        });
+};    
+
+function DOMController(game, scoreboard) {
     const container = document.querySelector('#container')
+
+    //score area
     const scorearea = document.createElement('div');
         scorearea.classList = 'scoreArea';
-        scorearea.textContent = 'SCORE:'
-        scorearea.innerHTML = "";
     const playerOneScore = document.createElement('div');
         playerOneScore.classList = 'playerScoreBoard';
     const playerTwoScore = document.createElement('div');
         playerTwoScore.classList = 'playerScoreBoard';
+    container.appendChild(scorearea);
+    scorearea.appendChild(playerOneScore);
+    scorearea.appendChild(playerTwoScore);
     
 
-    //Setup
+    //game grid
     const gameGridArea = document.createElement('div');
          gameGridArea.classList = 'gameGridArea';
-    function createBoard() {
-    
-    for (let i = 1; i < 10; i++) {
-        createSquares(i);
-    };
-    };
-
     const squares = [];
+    
     const createSquares = (id) => {
         const newSquare = document.createElement('div');
         newSquare.classList.add("square");
@@ -280,56 +288,21 @@ function DOMController() {
             game.playRound(id);
             renderBoard();
             renderScores();
-            
         });
+
         gameGridArea.append(newSquare);
         squares.push(newSquare);
     };
+        for (let i = 1; i < 10; i++) {
+        createSquares(i);
+        };
 
-    container.appendChild(gameGridArea);
-    
-    // Welcome Dialogue Pop-up
-    const renderWelcomeBox = () => {
-        const user1 = document.getElementById("player1");
-        const user2 = document.getElementById("player2");
-        const startButton = document.getElementById("startButton");
-        startButton.addEventListener('click', () => {returnText()})
-        function returnText() {
-        let input = user1.value;
-        console.log(input)}
-        
-    };
+        container.appendChild(gameGridArea);
 
-    // Gameplay
-    const renderBoard = () => {
-        const board = game.getGameboard().getBoard();
-            board.forEach((row, i) => {
-                row.forEach((cell, j) => {
-                    const index = i * 3 + j;
-                    squares[index].textContent = cell.getValue() === 0 ? "" : cell.getValue();
-                })
-            });
-    };
-
-    // Scoring
-    const renderScores = () => {
-        const [p1, p2] = scoreboard.getPlayerNames()
-        const p1Score = scoreboard.getScores()[p1];
-        const p2Score = scoreboard.getScores()[p2];
-    
-        playerOneScore.innerHTML = `${p1}: ${p1Score}`;
-        playerTwoScore.innerHTML = `${p2}: ${p2Score}`;
-    };
-    
-    container.appendChild(scorearea);
-        scorearea.appendChild(playerOneScore);
-        scorearea.appendChild(playerTwoScore);
-    
-    // Message Area
+     // Message Area
     const messageArea = document.createElement('h3');
         messageArea.classList = 'messageArea';
     container.appendChild(messageArea);
-    
 
     // Buttons
     const buttonArea = document.createElement('div');
@@ -347,17 +320,38 @@ function DOMController() {
          renderBoard();
 
        });
-       
+    
+    // Render Helpers
+    const renderBoard = () => {
+        const board = game.getGameboard().getBoard();
+            board.forEach((row, i) => {
+                row.forEach((cell, j) => {
+                    const index = i * 3 + j;
+                    squares[index].textContent = cell.getValue() === 0 ? "" : cell.getValue();
+                })
+            });
+    };
+
+        // Scoring
+    const renderScores = () => {
+        const [p1, p2] = scoreboard.getPlayerNames()
+        const p1Score = scoreboard.getScores()[p1];
+        const p2Score = scoreboard.getScores()[p2];
+    
+        playerOneScore.innerHTML = `${p1}: ${p1Score}`;
+        playerTwoScore.innerHTML = `${p2}: ${p2Score}`;
+    };
+    
+
        resetGameButton.innerHTML = "Reset Game";
     container.appendChild(buttonArea);
     buttonArea.appendChild(nextRoundButton);
     buttonArea.appendChild(resetGameButton);
     
-    renderWelcomeBox();
-    createBoard();
     renderBoard();
     renderScores();
     
 };
-const { game, scoreboard } = SetupGame();
-DOMController(game.getGameboard());
+
+startGame();
+
