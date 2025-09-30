@@ -3,39 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe</title>
+    <title>Tic Tac Toe</title>
+    <link rel="preload" href="style.css" as="style">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>It's Tic-Tac-Toe Time!</h1>
+    <h1>Tic Tac Toe</h1>
     <div id="container"></div>
-    <div id="overlay"></div>
+    <div id="overlay" class="overlay hidden"></div>
     <div id="welcomeDialogue" class="dialogue hidden">
-        <h2>Welcome To The GAME!</h2>
-        <h3>Who Wants To Play?</h3>
-        <div>
-            <div>
-                <label for="player1">* Player One:</label>
-                <input type="text" name="player1" id="player1">
+        <h2>Who Wants To Play?</h2>
+        <div class="playerInputs">
+            <div class="playerInput">
+                <label for="player1">Player One:</label>
+                <input type="text" placeholder= "X" name="player1" id="player1" class="input">
             </div>
-            <div>
-                <label for="player2">* Player Two:</label>
-                <input type="text" name="player2" id="player2">
+            <div class="playerInput">
+                <label for="player2">Player Two:</label>
+                <input type="text" placeholder= "O" name="player2" id="player2" class="input">
             </div>
         </div>
-        <button id="startButton">Let's GO!</button>
+        <button id="startButton" class="button-89" role="button">Let's GO!</button>
     </div>
     <div id="roundOverDialogue" class="dialogue hidden">
         <h2 class="winner"></h2>
-        <h3 class="scoreIsNow"></h3>
-        <div>
+        <div class = "roundOverButtons">
             <div>
-                <p>Another Round?</p>
-                <button id="nextRoundButton"></button>
+                <button id="nextRoundButton" class="button-89"></button>
             </div>
-                <div>
-                <p>Start All Over?</p>
-            <button id="startAllOver"></button>
+            <div>
+                <button id="startAllOver" class="button-89"></button>
             </div>
         </div>
     </div>

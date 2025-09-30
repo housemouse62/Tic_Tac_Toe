@@ -235,58 +235,86 @@ function GameController(scoreboard) {
     };
 };
 
-const startGame = () => {
-        const startButton = document.getElementById("startButton");
-        document.getElementById('welcomeDialogue').style.display = 'block';
-        startButton.addEventListener('click', () => {
-            const user1 = document.getElementById("player1").value || 'Player One';
-            const user2 = document.getElementById("player2").value || 'Player Two';
-        document.getElementById('welcomeDialogue').style.display = 'none';
+// const startGame = () => {
+//         const startButton = document.getElementById("startButton");
+//         document.getElementById('welcomeDialogue').style.display = 'flex';
+//         startButton.addEventListener('click', () => {
+//             const user1 = document.getElementById("player1").value || 'Player One';
+//             const user2 = document.getElementById("player2").value || 'Player Two';
+//         document.getElementById('welcomeDialogue').style.display = 'none';
 
 
-        const { game, scoreboard } = SetupGame(user1, user2);
-        DOMController( game, scoreboard);
-        });
-};    
+//         const { game, scoreboard } = SetupGame(user1, user2);
+//         DOMController( game, scoreboard);
+//         });
+// };    
 
-function DOMController(game, scoreboard) {
-    const container = document.querySelector('#container')
-    const [p1, p2] = scoreboard.getPlayerNames()
+let gameInstance;
+let scoreboardInstance;
+let domControllerInstance;
+
+window.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.getElementById("overlay");
+    const welcomeDialogue = document.getElementById("welcomeDialogue");
+    const startButton = document.getElementById("startButton");
+
+    scoreboardInstance = Scoreboard("Player One", "Player Two");
+    gameInstance = GameController(scoreboardInstance);
+    domControllerInstance = DOMController(gameInstance, scoreboardInstance);
+
+    overlay.classList.add("show");
+    welcomeDialogue.classList.add("show");
+
+    startButton.addEventListener('click', () => {
+        const user1 = document.getElementById("player1").value || 'Player One';
+        const user2 = document.getElementById("player2").value || 'Player Two';
+
+    scoreboardInstance = Scoreboard(user1, user2);
+    gameInstance = GameController(scoreboardInstance);
+
+    domControllerInstance.updateGame(gameInstance, scoreboardInstance);
+
+    overlay.classList.remove("show");
+    welcomeDialogue.classList.remove("show");
+    });
+});
+
+function DOMController( game, scoreboard) {
+    const container = document.querySelector('#container');
+    const squares = [];
+//    let game = initialGame;
+//    let scoreboard = initialScoreboard;
 
     //score area
     const scorearea = document.createElement('div');
         scorearea.classList = 'scoreArea';
     const playerOneScore = document.createElement('div');
         playerOneScore.classList = 'playerScoreBoard';
+    const playerScoreDivider = document.createElement('div');
+        playerScoreDivider.classList = 'playerScoreBoard divider';
     const playerTwoScore = document.createElement('div');
         playerTwoScore.classList = 'playerScoreBoard';
-    
-    
 
     //game grid
+    const gameGridAreaBorder = document.createElement('div');
+    gameGridAreaBorder.classList = 'gridBorder';
     const gameGridArea = document.createElement('div');
          gameGridArea.classList = 'gameGridArea';
-    const squares = [];
-    
+
     const createSquares = (id) => {
         const newSquare = document.createElement('div');
         newSquare.classList.add("square");
         newSquare.dataset.id = id;
-
-        newSquare.addEventListener("click", () => {
-            game.playRound(id);
-            renderBoard();
-            renderScores();
-        });
-
         gameGridArea.append(newSquare);
         squares.push(newSquare);
     };
-        for (let i = 1; i < 10; i++) {
+
+    for (let i = 1; i < 10; i++) {
         createSquares(i);
         };
-
-        container.appendChild(gameGridArea);
+        
+     container.appendChild(gameGridAreaBorder);
+        gameGridAreaBorder.appendChild(gameGridArea);
 
      // Message Area
     const messageArea = document.createElement('h3');
@@ -295,6 +323,7 @@ function DOMController(game, scoreboard) {
 
     container.appendChild(scorearea);
     scorearea.appendChild(playerOneScore);
+    scorearea.appendChild(playerScoreDivider);
     scorearea.appendChild(playerTwoScore);
 
     // Buttons
@@ -320,70 +349,91 @@ function DOMController(game, scoreboard) {
                 });
             });
     };
-    
-    const roundOver = (winnerName) => {
-        const roundOverDialogue = document.getElementById('roundOverDialogue');
-        const winnerClass = document.querySelector('.winner');
-        const scoreIsNowClass = document.querySelector('.scoreIsNow');
-       
-        //Show popup
-        roundOverDialogue.style.display = 'block';
 
-        //Announce winner
-        if (winnerName === null) {
-            winnerClass.textContent = "It's a draw!"
-        } else {
-        winnerClass.textContent = `${winnerName.name} wins!`;
-        };
-
-        //Show Updated Score
-        const p1Score = scoreboard.getScores()[p1];
-        const p2Score = scoreboard.getScores()[p2];
-        scoreIsNowClass.textContent = `${p1}: ${p1Score} | ${p2}: ${p2Score}`;
-
-        //Buttons
-        const startAllOver = document.getElementById('startAllOver');
-        const nextRoundButton = document.getElementById("nextRoundButton");
-            nextRoundButton.innerHTML = "New Round";
-
-        nextRoundButton.addEventListener('click', () => {
-            game.SetNextRound()
-            renderScores();
-            renderBoard();
-            roundOverDialogue.style.display = 'none';
-        });
-
-        startAllOver.addEventListener('click', () => {
-         game.ResetGame();
-         renderScores();
-         renderBoard();
-         roundOverDialogue.style.display = 'none';
-       });
-
-        
-    };
-
-        // Scoring
+       // Scoring
     const renderScores = () => {
+        const [p1, p2] = scoreboard.getPlayerNames();
         const p1Score = scoreboard.getScores()[p1];
         const p2Score = scoreboard.getScores()[p2];
     
         playerOneScore.innerHTML = `${p1}: ${p1Score}`;
         playerTwoScore.innerHTML = `${p2}: ${p2Score}`;
+        playerScoreDivider.innerText = '|'
     };
+
+    squares.forEach(square => {
+        square.addEventListener("click", () => {
+            game.playRound(Number(square.dataset.id));
+            renderBoard();
+            renderScores();
+        })
+    })
+    
+    const updateGame = (newGame, newScoreboard) => {
+        game = newGame;
+        scoreboard = newScoreboard;
+        game.setRoundOverCallback(roundOver);
+        renderBoard();
+        renderScores();
+    };
+
+    const roundOverDialogue = document.getElementById("roundOverDialogue");
+    const nextRoundButton = document.getElementById('nextRoundButton');
+    const startAllOver = document.getElementById('startAllOver');
+    const winnerClass = document.querySelector('.winner');
+    const overlay = document.getElementById("overlay");
+
+    
+
+    const roundOver = (winnerName) => {
+        overlay.classList.add("show");
+        roundOverDialogue.classList.add("show");
+
+        //Announce winner
+        if (winnerName === null) {
+            winnerClass.textContent = "It's a draw!"
+        } else {
+            winnerClass.textContent = `${winnerName.name} wins!`;
+        };
+       
+
+        //Buttons
+            startAllOver.textContent = "Restart Game";
+            nextRoundButton.textContent = "Another Round";
+
+        nextRoundButton.onclick = () => {
+            game.SetNextRound();
+            renderScores();
+            renderBoard();
+            closeRoundOver();
+        };
+
+        startAllOver.onclick = () => {
+         game.ResetGame();
+         renderScores();
+         renderBoard();
+         closeRoundOver();
+       };
+    };
+
+    const closeRoundOver = () => {
+        overlay.classList.remove("show");
+        roundOverDialogue.classList.remove("show")
+    }
+
+     
     
 
        resetGameButton.innerHTML = "Reset Game";
     container.appendChild(buttonArea);
-    buttonArea.appendChild(nextRoundButton);
-    buttonArea.appendChild(resetGameButton);
     
     game.setRoundOverCallback(roundOver);
 
     renderBoard();
     renderScores();
     
+    return { updateGame }
 };
 
-startGame();
+//startGame();
 
